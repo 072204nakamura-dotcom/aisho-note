@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>相性ノート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1e2a2b;
+    --muted: #6f7b7d;
+    --line: #e2e6e4;
+    --soft: #f3f5f4;
+    --green: #2e5e4e;
+    --wine: #772f3c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 20px 120px; }
+
+  /* 検索 */
+  .top { padding: 18px 0 8px; display: flex; align-items: center; gap: 10px; }
+  .top input { flex: 1; border: 0; border-bottom: 2px solid var(--ink); background: transparent;
+    padding: 8px 0; font-size: 20px; font-weight: 500; outline: none; border-radius: 0; }
+  .top input::placeholder { color: var(--muted); font-weight: 400; }
+  .mode { border: 1px solid var(--line); background: var(--paper); border-radius: 999px;
+    padding: 6px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .mode.on { border-color: var(--ink); color: var(--ink); }
+
+  /* 主食材候補（種別ごとに折りたたみ） */
+  .mains { padding: 4px 0 8px; }
+  .mg { border-bottom: 1px solid var(--line); }
+  .mg-h { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; padding: 9px 0; text-align: left; font-size: 14px; color: var(--ink); }
+  .mg-h small { color: var(--muted); font-size: 12px; }
+  .mg-h .arrow { margin-left: auto; color: var(--muted); font-size: 12px; transition: transform .15s; }
+  .mg.open .mg-h .arrow { transform: rotate(90deg); }
+  .mg-b { display: none; flex-wrap: wrap; gap: 6px 14px; padding: 0 0 10px 12px; }
+  .mg.open .mg-b { display: flex; }
+  .mg-b button { border: 0; background: none; padding: 2px 0; color: var(--muted); font-size: 14px; border-bottom: 1px solid transparent; }
+  .mg-b button.on { color: var(--ink); border-bottom-color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .mg-h .arrow { transition: none; } }
+
+  /* 調理法 */
+  .methods { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 14px; margin: 0 -20px; padding-left: 20px;
+    padding-right: 20px; scrollbar-width: none; }
+  .methods::-webkit-scrollbar { display: none; }
+  .methods button { flex: 0 0 auto; border: 1px solid var(--line); background: var(--paper);
+    border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+  .methods button.on { background: var(--green); border-color: var(--green); color: #fff; }
+
+  /* 見出し */
+  .hero { display: flex; align-items: baseline; gap: 12px; padding: 6px 0 4px; }
+  .hero h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
+  .hero span { color: var(--muted); font-size: 15px; }
+
+  /* 種別セクション */
+  .sec { padding: 18px 0 6px; }
+  .sec h2 { margin: 0 0 4px; font-size: 13px; font-weight: 500; color: var(--muted);
+    display: flex; align-items: center; gap: 8px; }
+  .sec h2::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .sec.wine h2 { color: var(--wine); }
+  .sec.wine h2::after { background: var(--wine); opacity: .35; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--line); align-items: baseline; background: none; border-left: 0;
+    border-right: 0; border-top: 0; width: 100%; text-align: left; }
+  .row:last-child { border-bottom: 0; }
+  .row .name { font-size: 17px; font-weight: 500; }
+  .row .name small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+  .row .rate { font-size: 17px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+  .row .rate small { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 1px; }
+  .sec.wine .row .rate { color: var(--wine); }
+  .row .memo { grid-column: 1 / -1; color: var(--muted); font-size: 14px; }
+  .row .tag { color: var(--muted); font-size: 12px; }
+
+  /* 逆引き */
+  .rev .row .name b { font-weight: 700; }
+
+  .empty { color: var(--muted); padding: 40px 0; font-size: 15px; }
+  .empty b { color: var(--ink); font-weight: 500; }
+  .state { color: var(--muted); font-size: 13px; padding: 6px 0; }
+
+  /* 追加ボタン */
+  .fab { position: fixed; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); background: var(--green);
+    color: #fff; border: 0; border-radius: 999px; padding: 14px 22px; font-size: 16px; font-weight: 500;
+    box-shadow: 0 6px 18px rgba(46,94,78,.35); }
+
+  /* モーダル */
+  .sheet { position: fixed; inset: 0; background: rgba(30,42,43,.45); display: none; align-items: flex-end;
+    justify-content: center; z-index: 10; }
+  .sheet.open { display: flex; }
+  .panel { background: var(--paper); width: 100%; max-width: 640px; border-radius: 18px 18px 0 0;
+    padding: 18px 20px calc(20px + env(safe-area-inset-bottom)); max-height: 92vh; overflow-y: auto; }
+  .panel h3 { margin: 0 0 14px; font-size: 18px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; background: var(--paper); outline: none; font-size: 16px; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--ink); }
+  .field textarea { min-height: 64px; resize: vertical; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rates { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+  .rates button { border: 1px solid var(--line); background: var(--paper); border-radius: 8px;
+    padding: 10px 0; font-size: 15px; }
+  .rates button.on { border-color: var(--green); background: var(--green); color: #fff; }
+  .actions { display: flex; gap: 10px; margin-top: 18px; }
+  .actions .save { flex: 1; background: var(--ink); color: #fff; border: 0; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 500; }
+  .actions .cancel { background: var(--soft); border: 0; border-radius: 12px; padding: 14px 18px; }
+  .del { margin-top: 14px; width: 100%; background: none; border: 0; color: var(--wine); font-size: 14px; padding: 8px; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs button { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+  .tabs button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .list { border-top: 1px solid var(--line); }
+  .list .it { display: flex; align-items: center; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .list .it span { flex: 1; font-size: 16px; }
+  .list .it small { color: var(--muted); font-size: 12px; margin-right: 6px; }
+  .list .it button { border: 1px solid var(--line); background: var(--paper); border-radius: 8px; width: 36px; height: 34px; font-size: 15px; }
+  .list .it button.x { color: var(--wine); }
+  .list .it button:disabled { opacity: .3; }
+  .sugg { margin-top: 6px; border: 1px solid var(--line); border-radius: 10px; max-height: 176px; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .sugg:empty { display: none; }
+  .sugg button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line);
+    background: var(--paper); padding: 9px 12px; font-size: 15px; }
+  .sugg button:last-child { border-bottom: 0; }
+  .sugg button.on { background: var(--soft); font-weight: 500; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+  .chips button.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .addline { display: flex; gap: 8px; margin-top: 12px; }
+  .addline input { flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; outline: none; }
+  .addline button { border: 0; background: var(--soft); border-radius: 10px; padding: 0 16px; }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--ink); color: #fff;
+    padding: 10px 18px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <input id="q" type="text" placeholder="食材を入力（例：スズキ）" autocomplete="off" enterkeyhint="search">
+    <button class="mode" id="modeBtn" title="合わせる食材から主食材を探す">逆引き</button>
+    <button class="mode" id="setBtn" title="調理法・種別の設定">設定</button>
+  </div>
+  <div class="mains" id="mains"></div>
+  <div class="methods" id="methods"></div>
+
+  <div id="hero" class="hero"></div>
+  <div id="out"></div>
+  <div class="state" id="state"></div>
+</div>
+
+<button class="fab" id="fab">＋ 追加</button>
+
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <h3 id="ptitle">相性を追加</h3>
+    <div class="field"><label>主食材</label><input id="f_main" placeholder="入力で絞り込み／下から選ぶ" autocomplete="off">
+      <div class="chips" id="mainFilter" style="margin-top:6px"></div><div class="sugg" id="mainList"></div></div>
+    <div class="two">
+      <div class="field"><label>調理法</label><select id="f_method"></select><input id="f_method_new" placeholder="新しい調理法名" style="display:none;margin-top:6px"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>種別</label><select id="f_type"></select></div>
+    </div>
+      <div class="field"><label>分類（複数選べます）</label><div class="chips" id="f_group"></div><div class="addline" style="margin-top:8px"><input id="f_group_new" placeholder="新しい分類を追加"><button id="f_group_add" type="button">追加</button></div></div>
+    <div class="field"><label>合わせるもの</label><input id="f_item" placeholder="入力で絞り込み／下から選ぶ" autocomplete="off"><div class="sugg" id="itemList"></div><div class="hint" id="itemHint"></div></div>
+    <div class="field"><label>相性（1〜10）</label>
+      <div class="rates" id="rates"></div>
+    </div>
+    <div class="field"><label>メモ（任意）</label><textarea id="f_memo" placeholder="分量、店の在庫銘柄、注意点など"></textarea></div>
+    <div class="actions">
+      <button class="cancel" id="cancel">閉じる</button>
+      <button class="save" id="save">保存する</button>
+    </div>
+    <button class="del" id="del" style="display:none">この行を削除する</button>
+  </div>
+</div>
+
+<div class="sheet" id="settings">
+  <div class="panel">
+    <h3>設定</h3>
+    <div class="tabs"><button class="on" data-k="methods">調理法</button><button data-k="types">種別</button><button data-k="groups">分類</button></div>
+    <div class="list" id="setList"></div>
+    <div class="addline"><input id="setNew" placeholder="追加する名前"><button id="setAdd">追加</button></div>
+    <div class="actions">
+      <button class="cancel" id="setCancel">閉じる</button>
+      <button class="save" id="setSave">保存する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= 設定 =================
+// GASをデプロイしてできた「ウェブアプリのURL」をここに貼る
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZPo1RVos2ASocZ9TdgEY9yU8ZSf7oonTFVxo31cdc5u99MfapLxi3wBP2Mi8GrpI1vA/exec';
+
+// ================= 状態 =================
+let rows = [];          // 相性データ
+let types = [];         // 種別の並び順
+let methods = [];       // 調理法の並び順（先頭は「共通」想定）
+let groups = [];        // 分類の一覧
+let items = [];         // 食材マスター [{type, name}]
+let selMain = '';       // 選択中の主食材
+let selMethod = '';     // 選択中の調理法（''＝すべて）
+let reverse = false;    // 逆引きモード
+let editing = null;     // 編集中の行
+let rating = 8;
+let selGroups = [];     // フォームで選択中の分類
+let mainFilter = '登録済み';  // 主食材候補の絞り込み
+let openGroups = new Set(); // 開いている種別
+// 最近使った主食材（この端末に保存）
+let recent = [];
+try { recent = JSON.parse(localStorage.getItem('aisho_recent') || '[]'); } catch (e) { recent = []; }
+function touchRecent(name) {
+  if (!name) return;
+  recent = [name, ...recent.filter(x => x !== name)].slice(0, 50);
+  try { localStorage.setItem('aisho_recent', JSON.stringify(recent)); } catch (e) {}
+}
+function mainTypeOf(name) {
+  const hit = items.find(x => x.name === name && MAIN_TYPES.includes(x.type));
+  return hit ? hit.type : 'その他';
+}
+const MAIN_TYPES = ['魚介', '肉', '野菜', '果物'];
+
+const $ = id => document.getElementById(id);
+
+// ================= 読み込み =================
+async function load(silent) {
+  if (!silent) $('state').textContent = '読み込み中…';
+  try {
+    const res = await fetch(GAS_URL + '?t=' + Date.now());
+    const data = await res.json();
+    rows = data.rows || [];
+    types = data.types || [];
+    methods = data.methods || [];
+    groups = data.groups || [];
+    items = data.items || [];
+    $('state').textContent = '';
+    renderAll();
+  } catch (e) {
+    $('state').textContent = '読み込めませんでした。GAS_URL とデプロイ設定（全員）を確認してください。';
+  }
+}
+
+// ================= 描画 =================
+function mainList() {
+  return [...new Set(rows.map(r => r.main))].sort((a, b) => a.localeCompare(b, 'ja'));
+}
+
+function renderAll() {
+  renderMains();
+  renderMethods();
+  renderResults();
+  fillForm();
+}
+
+function renderMains() {
+  const box = $('mains');
+  box.innerHTML = '';
+  const all = mainList();
+  if (!all.length) return;
+  // 最近使った順（未使用は五十音順で後ろ）
+  const order = n => { const i = recent.indexOf(n); return i < 0 ? 9999 : i; };
+  const sorted = [...all].sort((a, b) => order(a) - order(b) || a.localeCompare(b, 'ja'));
+  const groupsOrder = [...MAIN_TYPES.filter(t => types.includes(t)), 'その他'];
+  const byType = {};
+  sorted.forEach(n => { const t = mainTypeOf(n); (byType[t] = byType[t] || []).push(n); });
+  if (selMain && !reverse) openGroups.add(mainTypeOf(selMain));
+  groupsOrder.forEach(t => {
+    const list = byType[t]; if (!list) return;
+    const g = document.createElement('div'); g.className = 'mg' + (openGroups.has(t) ? ' open' : '');
+    const head = document.createElement('button'); head.className = 'mg-h';
+    head.innerHTML = `${esc(t)}<small>${list.length}</small><span class="arrow">▶</span>`;
+    head.onclick = () => { openGroups.has(t) ? openGroups.delete(t) : openGroups.add(t); g.classList.toggle('open'); };
+    const body = document.createElement('div'); body.className = 'mg-b';
+    list.forEach(m => {
+      const b = document.createElement('button');
+      b.textContent = m;
+      if (m === selMain && !reverse) b.classList.add('on');
+      b.onclick = () => { reverse = false; selMain = m; selMethod = ''; $('q').value = m; $('modeBtn').classList.remove('on'); touchRecent(m); renderAll(); };
+      body.appendChild(b);
+    });
+    g.appendChild(head); g.appendChild(body); box.appendChild(g);
+  });
+}
+
+function renderMethods() {
+  const box = $('methods');
+  box.innerHTML = '';
+  if (reverse) return;
+  const all = document.createElement('button');
+  all.textContent = 'すべて';
+  if (!selMethod) all.classList.add('on');
+  all.onclick = () => { selMethod = ''; renderMethods(); renderResults(); };
+  box.appendChild(all);
+  // 選んだ主食材で登録がある調理法だけ、シートの並び順で出す
+  const used = new Set(rows.filter(r => r.main === selMain).map(r => r.method));
+  if (!used.size) return;
+  const list = methods.filter(m => m !== '共通' && used.has(m));
+  [...used].forEach(m => { if (m !== '共通' && !list.includes(m)) list.push(m); });
+  list.forEach(m => {
+    const b = document.createElement('button');
+    b.textContent = m;
+    if (m === selMethod) b.classList.add('on');
+    b.onclick = () => { selMethod = (selMethod === m) ? '' : m; renderMethods(); renderResults(); };
+    box.appendChild(b);
+  });
+}
+
+function renderResults() {
+  const out = $('out');
+  const hero = $('hero');
+  out.innerHTML = '';
+  hero.innerHTML = '';
+  const q = $('q').value.trim();
+
+  // ---- 逆引き：合わせるもの → 主食材×調理法 ----
+  if (reverse) {
+    if (!q) { out.innerHTML = '<div class="empty">合わせたい食材やワインを入力すると、<b>どの主食材・調理法に合うか</b>が出ます。</div>'; return; }
+    const hit = rows.filter(r => r.item.includes(q) || r.group.includes(q));
+    hero.innerHTML = `<h1>${esc(q)}</h1><span>に合う主食材</span>`;
+    if (!hit.length) { out.innerHTML = '<div class="empty">まだ登録がありません。</div>'; return; }
+    const sec = document.createElement('div'); sec.className = 'sec rev';
+    hit.sort((a, b) => num(b.rating) - num(a.rating) || a.main.localeCompare(b.main, 'ja')).forEach(r => {
+      const el = document.createElement('button'); el.className = 'row';
+      el.innerHTML = `<div class="name"><b>${esc(r.main)}</b><small>${esc(r.method)}</small></div>
+        <div class="rate">${rateHtml(r.rating)}</div>
+        ${r.memo ? `<div class="memo">${esc(r.item)}：${esc(r.memo)}</div>` : `<div class="memo">${esc(r.item)}</div>`}`;
+      el.onclick = () => openEdit(r);
+      sec.appendChild(el);
+    });
+    out.appendChild(sec);
+    return;
+  }
+
+  // ---- 通常：主食材 → 種別ごとに ----
+  if (!selMain) {
+    out.innerHTML = '<div class="empty">主食材を入力するか、上の一覧から選んでください。</div>';
+    return;
+  }
+  hero.innerHTML = `<h1>${esc(selMain)}</h1><span>${selMethod ? esc(selMethod) : 'すべての調理法'}</span>`;
+
+  const hit = rows.filter(r => r.main === selMain && (!selMethod || r.method === selMethod || r.method === '共通'));
+  if (!hit.length) {
+    out.innerHTML = `<div class="empty"><b>${esc(selMain)}</b>${selMethod ? '×' + esc(selMethod) : ''} の登録はまだありません。右下の「＋追加」から登録できます。</div>`;
+    return;
+  }
+
+  const order = [...types];
+  hit.forEach(r => { if (!order.includes(r.type)) order.push(r.type); });
+
+  order.forEach(t => {
+    const list = hit.filter(r => r.type === t);
+    if (!list.length) return;
+    list.sort((a, b) => num(b.rating) - num(a.rating));
+    const sec = document.createElement('div');
+    sec.className = 'sec' + (t === 'ワイン' ? ' wine' : '');
+    sec.innerHTML = `<h2>${esc(t)}</h2>`;
+    list.forEach(r => {
+      const el = document.createElement('button'); el.className = 'row';
+      const methodTag = (!selMethod && r.method !== '共通') ? `<small>${esc(r.method)}</small>` : '';
+      el.innerHTML = `<div class="name">${esc(r.item)}${methodTag}</div>
+        <div class="rate">${rateHtml(r.rating)}</div>
+        ${(r.group || r.memo) ? `<div class="memo">${[r.group, r.memo].filter(Boolean).map(esc).join(' ／ ')}</div>` : ''}`;
+      el.onclick = () => openEdit(r);
+      sec.appendChild(el);
+    });
+    out.appendChild(sec);
+  });
+}
+
+function splitGroups(s) { return String(s || '').split(/[、,]/).map(x => x.trim()).filter(Boolean); }
+function num(v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; }
+function rateHtml(v) { return `${num(v)}<small>/10</small>`; }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// ================= 検索 =================
+$('q').addEventListener('input', () => {
+  const v = $('q').value.trim();
+  if (reverse) { renderResults(); return; }
+  const list = mainList();
+  const exact = list.find(m => m === v);
+  const partial = list.find(m => v && m.includes(v));
+  const next = exact || partial || v;
+  if (next !== selMain) selMethod = '';
+  selMain = next;
+  if (exact) touchRecent(exact);
+  renderMains(); renderMethods(); renderResults();
+});
+$('modeBtn').onclick = () => {
+  reverse = !reverse;
+  $('modeBtn').classList.toggle('on', reverse);
+  $('q').placeholder = reverse ? '合わせるもの（例：トマト、シャルドネ）' : '食材を入力（例：スズキ）';
+  $('q').value = ''; selMain = ''; selMethod = '';
+  renderAll();
+};
+
+// ================= 追加・編集 =================
+function fillForm() {
+  renderMainList();
+  const fm = $('f_method'); fm.innerHTML = methods.map(m => `<option>${esc(m)}</option>`).join('') + '<option value="__new__">＋ 新しい調理法を追加</option>';
+  const ft = $('f_type'); ft.innerHTML = types.map(t => `<option>${esc(t)}</option>`).join('');
+  renderGroupChips();
+  renderItemList();
+}
+function setRating(v) {
+  rating = num(v) || 8;
+  [...$('rates').children].forEach(b => b.classList.toggle('on', num(b.dataset.v) === rating));
+}
+(() => { const box = $('rates'); for (let i = 1; i <= 10; i++) { const b = document.createElement('button'); b.dataset.v = i; b.textContent = i; b.onclick = () => setRating(i); box.appendChild(b); } })();
+function renderMainList() {
+  const q = $('f_main').value.trim();
+  const registered = mainList();
+  // フィルタチップ
+  const fb = $('mainFilter'); fb.innerHTML = '';
+  ['登録済み', ...MAIN_TYPES.filter(t => types.includes(t))].forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+    if (t === mainFilter) b.classList.add('on');
+    b.onclick = () => { mainFilter = t; renderMainList(); };
+    fb.appendChild(b);
+  });
+  let names = mainFilter === '登録済み' ? registered : items.filter(x => x.type === mainFilter).map(x => x.name);
+  names = [...new Set(names)];
+  const list = q ? names.filter(n => n.includes(q)) : names;
+  const box = $('mainList'); box.innerHTML = '';
+  list.forEach(n => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.textContent = n + (mainFilter !== '登録済み' && registered.includes(n) ? '　✓' : '');
+    if (n === q) b.classList.add('on');
+    b.onclick = () => { $('f_main').value = n; renderMainList(); };
+    box.appendChild(b);
+  });
+}
+$('f_main').addEventListener('input', renderMainList);
+function renderItemList() {
+  const t = $('f_type').value;
+  const q = $('f_item').value.trim();
+  const names = items.filter(x => x.type === t).map(x => x.name);
+  // すでに登録済みの「合わせるもの」も候補に混ぜる
+  rows.filter(r => r.type === t).forEach(r => { if (!names.includes(r.item)) names.push(r.item); });
+  const list = q ? names.filter(n => n.includes(q)) : names;
+  const box = $('itemList'); box.innerHTML = '';
+  list.forEach(n => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = n;
+    if (n === q) b.classList.add('on');
+    b.onclick = () => { $('f_item').value = n; renderItemList(); };
+    box.appendChild(b);
+  });
+  $('itemHint').textContent = names.length
+    ? (q && !list.length ? `「${q}」は候補にありません。そのまま保存すると${t}の候補に追加されます` : `${t}の候補 ${list.length}件`)
+    : '';
+}
+$('f_type').addEventListener('change', renderItemList);
+$('f_item').addEventListener('input', renderItemList);
+function renderGroupChips() {
+  const box = $('f_group'); box.innerHTML = '';
+  const all = [...groups];
+  selGroups.forEach(g => { if (!all.includes(g)) all.push(g); });
+  all.forEach(g => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = g;
+    if (selGroups.includes(g)) b.classList.add('on');
+    b.onclick = () => { selGroups = selGroups.includes(g) ? selGroups.filter(x => x !== g) : [...selGroups, g]; renderGroupChips(); };
+    box.appendChild(b);
+  });
+}
+$('f_group_add').onclick = async () => {
+  const v = $('f_group_new').value.trim();
+  if (!v) return;
+  $('f_group_new').value = '';
+  if (!selGroups.includes(v)) selGroups.push(v);
+  if (!groups.includes(v)) { groups.push(v); await post({ action: 'setList', list: 'groups', items: groups }); }
+  renderGroupChips();
+  renderItemList();
+};
+$('f_group_new').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('f_group_add').onclick(); } });
+$('f_method').addEventListener('change', () => {
+  const isNew = $('f_method').value === '__new__';
+  $('f_method_new').style.display = isNew ? 'block' : 'none';
+  if (isNew) setTimeout(() => $('f_method_new').focus(), 30);
+});
+
+function openAdd() {
+  editing = null;
+  $('ptitle').textContent = '相性を追加';
+  $('f_main').value = selMain || '';
+  mainFilter = '登録済み'; renderMainList();
+  $('f_method').value = selMethod || '共通';
+  $('f_method_new').value = ''; $('f_method_new').style.display = 'none';
+  $('f_type').value = types[0] || '';
+  renderItemList();
+  selGroups = []; $('f_group_new').value = ''; renderGroupChips();
+  $('f_item').value = ''; $('f_memo').value = '';
+  setRating(8);
+  $('del').style.display = 'none';
+  $('sheet').classList.add('open');
+  setTimeout(() => (selMain ? $('f_item') : $('f_main')).focus(), 50);
+}
+function openEdit(r) {
+  editing = r;
+  $('ptitle').textContent = '相性を編集';
+  $('f_main').value = r.main; mainFilter = '登録済み'; renderMainList();
+  $('f_method').value = r.method; $('f_type').value = r.type;
+  renderItemList();
+  $('f_method_new').value = ''; $('f_method_new').style.display = 'none';
+  selGroups = splitGroups(r.group); $('f_group_new').value = ''; renderGroupChips();
+  $('f_item').value = r.item; $('f_memo').value = r.memo;
+  setRating(r.rating || 8);
+  $('del').style.display = 'block';
+  $('sheet').classList.add('open');
+}
+function closeSheet() { $('sheet').classList.remove('open'); }
+$('fab').onclick = openAdd;
+$('cancel').onclick = closeSheet;
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSheet(); });
+
+$('save').onclick = async () => {
+  const row = {
+    id: editing ? editing.id : ('local-' + Date.now()),
+    main: $('f_main').value.trim(), method: $('f_method').value, type: $('f_type').value,
+    item: $('f_item').value.trim(), group: selGroups.join('、'), rating, memo: $('f_memo').value.trim()
+  };
+  if (row.method === '__new__') {
+    const nm = $('f_method_new').value.trim();
+    if (!nm) { toast('新しい調理法名を入力してください'); return; }
+    row.method = nm;
+    if (!methods.includes(nm)) { methods.push(nm); await post({ action: 'addMethod', name: nm }); }
+  }
+  if (!row.main || !row.item) { toast('主食材と合わせるものは必須です'); return; }
+  if (!items.some(x => x.type === row.type && x.name === row.item)) {
+    items.push({ type: row.type, name: row.item });
+    await post({ action: 'addItem', type: row.type, name: row.item });
+  }
+
+  // 画面は先に更新
+  if (editing) { Object.assign(editing, row); } else { rows.push(row); }
+  if (!reverse) { selMain = row.main; }
+  touchRecent(row.main);
+  closeSheet(); renderAll();
+  toast(editing ? '更新しました' : '追加しました');
+
+  await post({ action: editing ? 'update' : 'add', row });
+  setTimeout(() => load(true), 1500);
+};
+
+$('del').onclick = async () => {
+  if (!editing || !confirm(`「${editing.item}」を削除しますか？`)) return;
+  const id = editing.id;
+  rows = rows.filter(r => r.id !== id);
+  closeSheet(); renderAll();
+  toast('削除しました');
+  await post({ action: 'delete', id });
+  setTimeout(() => load(true), 1500);
+};
+
+// GASへの保存：no-cors ＋ text/plain（結果は読めないので、あとで再読み込みする）
+async function post(body) {
+  try {
+    await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+  } catch (e) {
+    toast('保存に失敗しました。通信を確認してください');
+  }
+}
+
+// ================= 設定（調理法・種別） =================
+let setKind = 'methods';
+let setWork = { methods: [], types: [], groups: [] };
+
+function openSettings() {
+  setWork = { methods: [...methods], types: [...types], groups: [...groups] };
+  setKind = 'methods';
+  [...document.querySelectorAll('.tabs button')].forEach(b => b.classList.toggle('on', b.dataset.k === setKind));
+  renderSetList();
+  $('setNew').value = '';
+  $('settings').classList.add('open');
+}
+function renderSetList() {
+  const box = $('setList'); box.innerHTML = '';
+  const arr = setWork[setKind];
+  const countOf = name => rows.filter(r => setKind === 'methods' ? r.method === name : setKind === 'types' ? r.type === name : splitGroups(r.group).includes(name)).length;
+  arr.forEach((name, i) => {
+    const el = document.createElement('div'); el.className = 'it';
+    const locked = (setKind === 'methods' && name === '共通');
+    el.innerHTML = `<span>${esc(name)}</span><small>${countOf(name) ? countOf(name) + '件' : ''}</small>
+      <button class="up" ${i === 0 ? 'disabled' : ''}>↑</button>
+      <button class="dn" ${i === arr.length - 1 ? 'disabled' : ''}>↓</button>
+      <button class="x" ${locked ? 'disabled' : ''}>×</button>`;
+    el.querySelector('.up').onclick = () => { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; renderSetList(); };
+    el.querySelector('.dn').onclick = () => { [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]]; renderSetList(); };
+    el.querySelector('.x').onclick = () => {
+      const n = countOf(name);
+      if (n && !confirm(`「${name}」は${n}件の登録で使われています。一覧から外しても登録データは残ります。外しますか？`)) return;
+      arr.splice(i, 1); renderSetList();
+    };
+    box.appendChild(el);
+  });
+}
+[...document.querySelectorAll('.tabs button')].forEach(b => b.onclick = () => {
+  setKind = b.dataset.k;
+  [...document.querySelectorAll('.tabs button')].forEach(x => x.classList.toggle('on', x === b));
+  renderSetList();
+});
+$('setAdd').onclick = () => {
+  const v = $('setNew').value.trim();
+  if (!v) return;
+  if (setWork[setKind].includes(v)) { toast('すでにあります'); return; }
+  setWork[setKind].push(v); $('setNew').value = ''; renderSetList();
+};
+$('setNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('setAdd').onclick(); } });
+$('setBtn').onclick = openSettings;
+$('setCancel').onclick = () => $('settings').classList.remove('open');
+$('settings').addEventListener('click', e => { if (e.target === $('settings')) $('settings').classList.remove('open'); });
+$('setSave').onclick = async () => {
+  {
+    if (!setWork.methods.includes('共通')) setWork.methods.unshift('共通');
+  }
+  const changedM = JSON.stringify(setWork.methods) !== JSON.stringify(methods);
+  const changedT = JSON.stringify(setWork.types) !== JSON.stringify(types);
+  const changedG = JSON.stringify(setWork.groups) !== JSON.stringify(groups);
+  methods = [...setWork.methods]; types = [...setWork.types]; groups = [...setWork.groups];
+  $('settings').classList.remove('open');
+  renderAll();
+  toast('保存しました');
+  if (changedM) await post({ action: 'setList', list: 'methods', items: methods });
+  if (changedT) await post({ action: 'setList', list: 'types', items: types });
+  if (changedG) await post({ action: 'setList', list: 'groups', items: groups });
+};
+
+let toastTimer;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+load();
+</script>
+</body>
+</html>
