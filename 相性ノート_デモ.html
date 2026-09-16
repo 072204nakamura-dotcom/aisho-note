@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>相性ノート</title>
+<title>相性ノート（デモ）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -203,9 +203,18 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== デモ用（GAS不要・ブラウザ内だけで動く。再読み込みで元に戻る） =====
+const DEMO = { rows: [{"id":"demoM0","main":"合鴨ロース","method":"ロースト","type":"果物","item":"いちじく","group":"甘味","rating":"9","memo":"赤ワインソースと"},{"id":"demoM1","main":"合鴨ロース","method":"ロースト","type":"ソース","item":"赤ワインソース","group":"甘味、とろみ","rating":"9","memo":""},{"id":"demoM2","main":"合鴨ロース","method":"ロースト","type":"ワイン","item":"ピノ・ノワール","group":"香り","rating":"9","memo":""},{"id":"demoM3","main":"合鴨ロース","method":"スモーク","type":"香味","item":"黒胡椒","group":"辛み、香り","rating":"8","memo":""},{"id":"demoM4","main":"豚肩ロース","method":"ロースト","type":"果物","item":"りんご","group":"甘味、酸味","rating":"8","memo":"ソテーして添える"},{"id":"demoM5","main":"豚肩ロース","method":"ロースト","type":"ハーブ","item":"セージ","group":"香り","rating":"9","memo":""},{"id":"demoM6","main":"豚肩ロース","method":"煮込み","type":"酸味・調味","item":"粒マスタード","group":"酸味、辛み","rating":"8","memo":""},{"id":"demoM7","main":"和牛ラム","method":"グリル","type":"ハーブ","item":"ローズマリー","group":"香り","rating":"9","memo":""},{"id":"demoM8","main":"和牛ラム","method":"グリル","type":"香味","item":"クミン","group":"香り","rating":"8","memo":""},{"id":"demoM9","main":"和牛ラム","method":"グリル","type":"ワイン","item":"シラー","group":"香り","rating":"9","memo":""},{"id":"demoM10","main":"真鯛","method":"カルパッチョ","type":"果物","item":"グレープフルーツ","group":"酸味、苦味","rating":"8","memo":""},{"id":"demoM11","main":"真鯛","method":"蒸し","type":"ハーブ","item":"木の芽","group":"香り","rating":"9","memo":""},{"id":"demo0","main":"スズキ","method":"共通","type":"酸味・調味","item":"レモン","group":"酸味、爽やかさ","rating":"9","memo":"仕上げに絞る"},{"id":"demo1","main":"スズキ","method":"共通","type":"酸味・調味","item":"すだち","group":"酸味、爽やかさ","rating":"7","memo":"和の仕立て向け"},{"id":"demo2","main":"スズキ","method":"共通","type":"ハーブ","item":"ディル","group":"香り","rating":"9","memo":"生・蒸しどちらも"},{"id":"demo3","main":"スズキ","method":"共通","type":"ハーブ","item":"フェンネル","group":"香り","rating":"7","memo":""},{"id":"demo4","main":"スズキ","method":"蒸し","type":"野菜","item":"白ネギ","group":"香り","rating":"9","memo":"千切りで上にのせる"},{"id":"demo5","main":"スズキ","method":"蒸し","type":"香味","item":"生姜","group":"辛み、香り","rating":"9","memo":"熱したごま油をかける"},{"id":"demo6","main":"スズキ","method":"蒸し","type":"酸味・調味","item":"昆布","group":"旨味","rating":"9","memo":"敷いて蒸す"},{"id":"demo7","main":"スズキ","method":"蒸し","type":"ソース","item":"ブールブラン","group":"とろみ","rating":"9","memo":"皮のクリスプと合わせる"},{"id":"demo8","main":"スズキ","method":"蒸し","type":"ワイン","item":"シャルドネ（樽なし）","group":"爽やかさ","rating":"9","memo":"ブールブランに合わせて"},{"id":"demo9","main":"スズキ","method":"アクアパッツァ","type":"魚介","item":"アサリ","group":"旨味","rating":"9","memo":"150g目安"},{"id":"demo10","main":"スズキ","method":"アクアパッツァ","type":"野菜","item":"ミニトマト","group":"甘味、酸味","rating":"9","memo":""},{"id":"demo11","main":"スズキ","method":"アクアパッツァ","type":"香味","item":"ニンニク","group":"香り","rating":"9","memo":""},{"id":"demo12","main":"スズキ","method":"アクアパッツァ","type":"酸味・調味","item":"オリーブ","group":"塩味、苦味","rating":"7","memo":""},{"id":"demo13","main":"スズキ","method":"アクアパッツァ","type":"ワイン","item":"ヴェルメンティーノ","group":"爽やかさ","rating":"9","memo":"魚介と塩気に"},{"id":"demo14","main":"スズキ","method":"カルパッチョ","type":"酸味・調味","item":"オリーブオイル","group":"香り","rating":"9","memo":""},{"id":"demo15","main":"スズキ","method":"カルパッチョ","type":"ハーブ","item":"セロリの葉","group":"香り、苦味","rating":"7","memo":""},{"id":"demo16","main":"スズキ","method":"カルパッチョ","type":"ワイン","item":"ソーヴィニヨン・ブラン","group":"爽やかさ、香り","rating":"9","memo":""},{"id":"demo20","main":"スズキ","method":"フリット","type":"酸味・調味","item":"塩・レモン","group":"塩味、酸味","rating":"9","memo":""},{"id":"demo21","main":"スズキ","method":"フリット","type":"ワイン","item":"スパークリング（辛口）","group":"爽やかさ、食感（プチプチ）","rating":"9","memo":"揚げ物の油を切る"},{"id":"demo22","main":"スズキ","method":"ムニエル","type":"乳製品・油脂","item":"バター","group":"とろみ","rating":"9","memo":"20g目安"},{"id":"demo23","main":"スズキ","method":"ムニエル","type":"ソース","item":"ケッパー・レモンバター","group":"塩味、酸味、とろみ","rating":"9","memo":""},{"id":"demo25","main":"鶏もも","method":"グリル","type":"ハーブ","item":"ローズマリー","group":"香り","rating":"9","memo":""},{"id":"demo26","main":"鶏もも","method":"グリル","type":"酸味・調味","item":"レモン","group":"爽やかさ","rating":"9","memo":""},{"id":"demo27","main":"鶏もも","method":"グリル","type":"ワイン","item":"ロゼ（辛口）","group":"爽やかさ","rating":"9","memo":""},{"id":"demo28","main":"鶏もも","method":"煮込み","type":"野菜","item":"トマト","group":"甘味、酸味","rating":"9","memo":"カチャトーラ"},{"id":"demo29","main":"鶏もも","method":"煮込み","type":"ワイン","item":"キャンティ","group":"爽やかさ","rating":"9","memo":""}],
+  types: ['野菜','果物','ハーブ','香味','魚介','肉','乳製品・油脂','酸味・調味','ソース','ワイン','その他'],
+  groups: ["塩味","酸味","苦味","甘味","旨味","辛み","香り","爽やかさ","とろみ","粘り","食感（サクサク）","食感（プチプチ）","食感（カリカリ）"],
+  items: [{"type":"肉","name":"鶏もも"},{"type":"肉","name":"鶏むね"},{"type":"肉","name":"鶏手羽先"},{"type":"肉","name":"鶏レバー"},{"type":"肉","name":"合鴨ロース"},{"type":"肉","name":"合鴨むね"},{"type":"肉","name":"豚肩ロース"},{"type":"肉","name":"豚フィレ"},{"type":"肉","name":"豚バラ"},{"type":"肉","name":"牛ハラミ"},{"type":"肉","name":"牛内もも"},{"type":"肉","name":"牛フィレ"},{"type":"肉","name":"和牛ラム"},{"type":"肉","name":"ラムチョップ"},{"type":"肉","name":"仔羊もも"},{"type":"肉","name":"ホロホロ鳥"},{"type":"肉","name":"ジビエ（鹿）"},{"type":"肉","name":"ジビエ（猪）"},{"type":"魚介","name":"スズキ"},{"type":"魚介","name":"真鯛"},{"type":"魚介","name":"サワラ"},{"type":"魚介","name":"ヒラメ"},{"type":"魚介","name":"メバル"},{"type":"魚介","name":"アコウ"},{"type":"魚介","name":"タチウオ"},{"type":"魚介","name":"カサゴ"},{"type":"魚介","name":"イサキ"},{"type":"魚介","name":"アジ"},{"type":"魚介","name":"サバ"},{"type":"魚介","name":"イワシ"},{"type":"魚介","name":"カツオ"},{"type":"魚介","name":"マグロ"},{"type":"魚介","name":"サーモン"},{"type":"魚介","name":"鰤"},{"type":"魚介","name":"コノシロ"},{"type":"野菜","name":"トマト"},{"type":"野菜","name":"ミニトマト"},{"type":"野菜","name":"玉ねぎ"},{"type":"野菜","name":"新玉ねぎ"},{"type":"野菜","name":"長ねぎ"},{"type":"野菜","name":"白ネギ"},{"type":"野菜","name":"じゃがいも"},{"type":"野菜","name":"さつまいも"},{"type":"野菜","name":"里芋"},{"type":"野菜","name":"かぼちゃ"},{"type":"野菜","name":"にんじん"},{"type":"野菜","name":"大根"},{"type":"野菜","name":"かぶ"},{"type":"野菜","name":"ごぼう"},{"type":"野菜","name":"れんこん"},{"type":"野菜","name":"なす"},{"type":"野菜","name":"ズッキーニ"},{"type":"野菜","name":"パプリカ"},{"type":"野菜","name":"ピーマン"},{"type":"野菜","name":"きゅうり"},{"type":"野菜","name":"キャベツ"},{"type":"野菜","name":"白菜"},{"type":"野菜","name":"レタス"},{"type":"野菜","name":"ほうれん草"},{"type":"野菜","name":"小松菜"},{"type":"野菜","name":"水菜"},{"type":"野菜","name":"春菊"},{"type":"野菜","name":"ブロッコリー"},{"type":"野菜","name":"カリフラワー"},{"type":"野菜","name":"アスパラガス"},{"type":"野菜","name":"菜の花"},{"type":"野菜","name":"枝豆"},{"type":"野菜","name":"そら豆"},{"type":"野菜","name":"スナップエンドウ"},{"type":"野菜","name":"いんげん"},{"type":"野菜","name":"オクラ"},{"type":"野菜","name":"とうもろこし"},{"type":"野菜","name":"セロリ"},{"type":"野菜","name":"フェンネル（球）"},{"type":"野菜","name":"ビーツ"},{"type":"野菜","name":"ラディッシュ"},{"type":"野菜","name":"芽キャベツ"},{"type":"野菜","name":"ルッコラ"},{"type":"野菜","name":"クレソン"},{"type":"野菜","name":"エンダイブ"},{"type":"野菜","name":"トレビス"},{"type":"野菜","name":"しいたけ"},{"type":"野菜","name":"舞茸"},{"type":"野菜","name":"エリンギ"},{"type":"野菜","name":"マッシュルーム"},{"type":"野菜","name":"しめじ"},{"type":"野菜","name":"えのき"},{"type":"野菜","name":"たけのこ"},{"type":"野菜","name":"山菜"},{"type":"野菜","name":"栗"},{"type":"果物","name":"ゆず"},{"type":"果物","name":"レモン"},{"type":"果物","name":"りんご"},{"type":"果物","name":"洋梨"},{"type":"果物","name":"いちじく"},{"type":"果物","name":"ぶどう"},{"type":"果物","name":"柿"},{"type":"果物","name":"いちご"},{"type":"果物","name":"ブルーベリー"},{"type":"果物","name":"オレンジ"},{"type":"果物","name":"グレープフルーツ"},{"type":"ハーブ","name":"バジル"},{"type":"ハーブ","name":"ディル"},{"type":"ハーブ","name":"タイム"},{"type":"ハーブ","name":"ローズマリー"},{"type":"ハーブ","name":"イタリアンパセリ"},{"type":"ハーブ","name":"パセリ"},{"type":"ハーブ","name":"セージ"},{"type":"ハーブ","name":"オレガノ"},{"type":"ハーブ","name":"ミント"},{"type":"ハーブ","name":"チャービル"},{"type":"ハーブ","name":"タラゴン"},{"type":"ハーブ","name":"コリアンダー（パクチー）"},{"type":"ハーブ","name":"レモングラス"},{"type":"ハーブ","name":"ローリエ"},{"type":"ハーブ","name":"フェンネル（葉）"},{"type":"ハーブ","name":"セロリの葉"},{"type":"ハーブ","name":"青じそ"},{"type":"ハーブ","name":"三つ葉"},{"type":"ハーブ","name":"木の芽"},{"type":"香味","name":"みょうが"},{"type":"香味","name":"生姜"},{"type":"香味","name":"ニンニク"},{"type":"香味","name":"わさび"},{"type":"香味","name":"山椒"},{"type":"香味","name":"黒胡椒"},{"type":"香味","name":"白胡椒"},{"type":"香味","name":"唐辛子"},{"type":"香味","name":"クミン"},{"type":"香味","name":"カルダモン"},{"type":"香味","name":"シナモン"},{"type":"香味","name":"ナツメグ"},{"type":"香味","name":"八角"},{"type":"香味","name":"花椒"},{"type":"香味","name":"柚子胡椒"},{"type":"香味","name":"ケッパー"},{"type":"魚介","name":"アサリ"},{"type":"魚介","name":"ハマグリ"},{"type":"魚介","name":"ムール貝"},{"type":"魚介","name":"ホタテ"},{"type":"魚介","name":"牡蠣"},{"type":"魚介","name":"エビ"},{"type":"魚介","name":"イカ"},{"type":"魚介","name":"タコ"},{"type":"魚介","name":"ウニ"},{"type":"魚介","name":"イクラ"},{"type":"魚介","name":"カラスミ"},{"type":"魚介","name":"アンチョビ"},{"type":"肉","name":"ベーコン"},{"type":"肉","name":"パンチェッタ"},{"type":"肉","name":"生ハム"},{"type":"肉","name":"サラミ"},{"type":"肉","name":"鶏ガラ"},{"type":"肉","name":"フォン・ド・ボー"},{"type":"魚介","name":"昆布出汁"},{"type":"魚介","name":"鰹出汁"},{"type":"魚介","name":"干し椎茸"},{"type":"魚介","name":"煮干し"},{"type":"乳製品・油脂","name":"バター"},{"type":"乳製品・油脂","name":"発酵バター"},{"type":"乳製品・油脂","name":"生クリーム"},{"type":"乳製品・油脂","name":"牛乳"},{"type":"乳製品・油脂","name":"ヨーグルト"},{"type":"乳製品・油脂","name":"サワークリーム"},{"type":"乳製品・油脂","name":"マスカルポーネ"},{"type":"乳製品・油脂","name":"クリームチーズ"},{"type":"乳製品・油脂","name":"パルミジャーノ"},{"type":"乳製品・油脂","name":"ペコリーノ"},{"type":"乳製品・油脂","name":"モッツァレラ"},{"type":"乳製品・油脂","name":"ブルーチーズ"},{"type":"乳製品・油脂","name":"オリーブオイル"},{"type":"乳製品・油脂","name":"ごま油"},{"type":"乳製品・油脂","name":"太白ごま油"},{"type":"乳製品・油脂","name":"ラード"},{"type":"乳製品・油脂","name":"鴨脂"},{"type":"酸味・調味","name":"レモン"},{"type":"酸味・調味","name":"すだち"},{"type":"酸味・調味","name":"かぼす"},{"type":"酸味・調味","name":"柚子"},{"type":"酸味・調味","name":"ライム"},{"type":"酸味・調味","name":"白ワインビネガー"},{"type":"酸味・調味","name":"赤ワインビネガー"},{"type":"酸味・調味","name":"シェリービネガー"},{"type":"酸味・調味","name":"バルサミコ"},{"type":"酸味・調味","name":"米酢"},{"type":"酸味・調味","name":"黒酢"},{"type":"酸味・調味","name":"醤油"},{"type":"酸味・調味","name":"薄口醤油"},{"type":"酸味・調味","name":"みりん"},{"type":"酸味・調味","name":"酒"},{"type":"酸味・調味","name":"白味噌"},{"type":"酸味・調味","name":"赤味噌"},{"type":"酸味・調味","name":"塩麹"},{"type":"酸味・調味","name":"醤油麹"},{"type":"酸味・調味","name":"ナンプラー"},{"type":"酸味・調味","name":"オイスターソース"},{"type":"酸味・調味","name":"はちみつ"},{"type":"酸味・調味","name":"メープルシロップ"},{"type":"酸味・調味","name":"マスタード"},{"type":"酸味・調味","name":"粒マスタード"},{"type":"酸味・調味","name":"オリーブ"},{"type":"酸味・調味","name":"ケッパー"},{"type":"酸味・調味","name":"昆布"},{"type":"酸味・調味","name":"梅干し"},{"type":"酸味・調味","name":"塩"},{"type":"酸味・調味","name":"塩・レモン"},{"type":"ソース","name":"ブールブラン"},{"type":"ソース","name":"ブールノワゼット"},{"type":"ソース","name":"ブールルージュ"},{"type":"ソース","name":"ベアルネーズ"},{"type":"ソース","name":"オランデーズ"},{"type":"ソース","name":"ヴィネグレット"},{"type":"ソース","name":"サルサヴェルデ"},{"type":"ソース","name":"ジェノベーゼ"},{"type":"ソース","name":"トマトソース"},{"type":"ソース","name":"アメリケーヌ"},{"type":"ソース","name":"クリームソース"},{"type":"ソース","name":"マッシュルームソース"},{"type":"ソース","name":"赤ワインソース"},{"type":"ソース","name":"ポルト酒ソース"},{"type":"ソース","name":"バルサミコソース"},{"type":"ソース","name":"柚子胡椒ソース"},{"type":"ソース","name":"ケッパー・レモンバター"},{"type":"ソース","name":"醤油バター"},{"type":"ソース","name":"ジンジャーソース"},{"type":"ソース","name":"タルタルソース"},{"type":"ワイン","name":"シャルドネ（樽なし）"},{"type":"ワイン","name":"シャルドネ（樽あり）"},{"type":"ワイン","name":"ソーヴィニヨン・ブラン"},{"type":"ワイン","name":"リースリング"},{"type":"ワイン","name":"ヴェルメンティーノ"},{"type":"ワイン","name":"ピノ・グリージョ"},{"type":"ワイン","name":"アルバリーニョ"},{"type":"ワイン","name":"甲州"},{"type":"ワイン","name":"ロゼ（辛口）"},{"type":"ワイン","name":"スパークリング（辛口）"},{"type":"ワイン","name":"シャンパーニュ"},{"type":"ワイン","name":"ピノ・ノワール"},{"type":"ワイン","name":"ガメイ"},{"type":"ワイン","name":"キャンティ"},{"type":"ワイン","name":"メルロー"},{"type":"ワイン","name":"カベルネ・ソーヴィニヨン"},{"type":"ワイン","name":"シラー"},{"type":"ワイン","name":"マスカット・ベーリーA"}],
+  methods: ['共通', '蒸し', '蒸し煮', 'ポシェ', 'アクアパッツァ', 'カルパッチョ', 'マリネ', 'フリット', 'ムニエル', 'ポワレ', 'ソテー', 'グリル', 'ロースト', 'スモーク', 'コンフィ', '煮込み', 'グラタン', 'テリーヌ'] };
+async function load(silent){ if(!rows.length){ rows=DEMO.rows; types=DEMO.types; methods=DEMO.methods; groups=DEMO.groups; items=DEMO.items; } $('state').textContent='デモモード（保存はされません）'; renderAll(); }
+async function post(body){ }
+
 // ================= 設定 =================
 // GASをデプロイしてできた「ウェブアプリのURL」をここに貼る
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZPo1RVos2ASocZ9TdgEY9yU8ZSf7oonTFVxo31cdc5u99MfapLxi3wBP2Mi8GrpI1vA/exec';
+const GAS_URL = 'ここにGASのウェブアプリURLを貼る';
 
 // ================= 状態 =================
 let rows = [];          // 相性データ
@@ -238,23 +247,6 @@ const MAIN_TYPES = ['魚介', '肉', '野菜', '果物'];
 const $ = id => document.getElementById(id);
 
 // ================= 読み込み =================
-async function load(silent) {
-  if (!silent) $('state').textContent = '読み込み中…';
-  try {
-    const res = await fetch(GAS_URL + '?t=' + Date.now());
-    const data = await res.json();
-    rows = data.rows || [];
-    types = data.types || [];
-    methods = data.methods || [];
-    groups = data.groups || [];
-    items = data.items || [];
-    $('state').textContent = '';
-    renderAll();
-  } catch (e) {
-    $('state').textContent = '読み込めませんでした。GAS_URL とデプロイ設定（全員）を確認してください。';
-  }
-}
-
 // ================= 描画 =================
 function mainList() {
   return [...new Set(rows.map(r => r.main))].sort((a, b) => a.localeCompare(b, 'ja'));
@@ -382,7 +374,7 @@ function renderResults() {
   });
 }
 
-function splitGroups(s) { return String(s || '').split(/[、,]/).map(x => x.trim()).filter(Boolean); }
+function splitGroups(s) { return String(s || '').split(/[、]/).map(x => x.trim()).filter(Boolean); }
 function num(v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; }
 function rateHtml(v) { return `${num(v)}<small>/10</small>`; }
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -539,14 +531,6 @@ $('del').onclick = async () => {
   setTimeout(() => load(true), 1500);
 };
 
-// GASへの保存：no-cors ＋ text/plain（結果は読めないので、あとで再読み込みする）
-async function post(body) {
-  try {
-    await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
-  } catch (e) {
-    toast('保存に失敗しました。通信を確認してください');
-  }
-}
 
 // ================= 設定（調理法・種別） =================
 let setKind = 'methods';
